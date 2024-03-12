@@ -1,25 +1,59 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
-    sourceType: 'module',
-  },
-  plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
+    'next/core-web-vitals',
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
+    'prettier',
   ],
-  root: true,
-  env: {
-    node: true,
-    jest: true,
-  },
-  ignorePatterns: ['.eslintrc.js'],
   rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'react/display-name': 'off',
+    '@next/next/no-img-element': 'off',
+    'react/no-unescaped-entities': 'off',
+    'import/no-anonymous-default-export': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    // add new line above comment
+    'lines-around-comment': [
+      'error',
+      {
+        beforeLineComment: true,
+        beforeBlockComment: true,
+        allowBlockStart: true,
+        allowClassStart: true,
+        allowObjectStart: true,
+        allowArrayStart: true,
+      },
+    ],
+    // add new line above return
+    'newline-before-return': 'error',
+    // add new line below import
+    'import/newline-after-import': [
+      'error',
+      {
+        count: 1,
+      },
+    ],
+    '@typescript-eslint/ban-types': [
+      'error',
+      {
+        extendDefaults: true,
+        types: {
+          '{}': false,
+        },
+      },
+    ],
+  },
+  plugins: ['import'],
+  settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: ['./tsconfig.json'],
+      },
+    },
   },
 };
