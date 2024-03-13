@@ -17,13 +17,13 @@ export class AccountController {
     return this.accountService.getAllAccount()
   }
 
-  @Get('/calculate')
-  getAccountCalculated() {
-    return this.accountService.calculateAccount()
-  }
+  // @Get('/calculate')
+  // getAccountCalculated() {
+  //   return this.accountService.calculateAccount()
+  // }
 
-  @Get('/transfer')
-  transfer() {
-    return this.accountService.transfer()
-  }
+  // @Get('/transfer')
+  // transfer() {
+  //   return this.accountService.transfer()
+  // }
 }
