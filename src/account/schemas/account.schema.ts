@@ -26,6 +26,9 @@ export class Account {
 
   @Prop()
   keyHash: string
+
+  @Prop()
+  salt: string
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account)

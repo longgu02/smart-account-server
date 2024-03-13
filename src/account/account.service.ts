@@ -16,11 +16,16 @@ export class AccountService {
   constructor(@InjectModel(Account.name) private accountModel: Model<Account>) {}
 
   async createAccount(email: string, password: string) {
+    const newKeyHash = await this.genKey(password)
     const account = await this.accountModel.create({
       email: email,
-      password: await this.hashPassword(password)
+      password: await this.hashPassword(password),
+      salt: newKeyHash.salt,
+      keyHash: newKeyHash.encryptedPrivateKey
     })
-    await account.save()
+    // console.log({ newKey })
+    // await account.save()
+    console.log(account)
     return { account }
   }
 
@@ -135,5 +140,44 @@ export class AccountService {
 
   private async hashPassword(password: string): Promise<string> {
     return await hash(password, 10)
+  }
+
+  private genKey(password: string): Promise<{ salt: string; encryptedPrivateKey: string }> {
+    const EC = require('elliptic').ec
+    const ec = new EC('secp256k1')
+
+    const result: any = {}
+
+    const key = ec.genKeyPair()
+    const privKey = key.getPrivate()
+
+    const salt = require('crypto').randomBytes(16)
+    // const key = crypto.pbkdf2Sync()
+    // User's password
+    // // Derive an encryption key from the password
+    const hash = require('crypto').pbkdf2Sync(password, salt, 100000, 32, 'sha512')
+    // console.log(encryptedKey.toString());
+    // console.log({ hash })
+    console.log({ hashString: hash.toString('hex') })
+    // // Create an AES cipher
+    const cipher = require('crypto').createCipheriv('aes-256-cbc', hash, salt)
+    // console.log({ cipher })
+    // console.log({ cipherString: cipher.toString('hex') })
+
+    // // Encrypt the private key
+    let encryptedPrivateKey = cipher.update(privKey.toString('hex'), 'utf8', 'hex')
+    encryptedPrivateKey += cipher.final('hex')
+    result.encryptedPrivateKey = encryptedPrivateKey
+    result.salt = salt.toString('hex')
+    // console.log({ encryptedPrivateKey })
+
+    // // Now you can store `encryptedPrivateKey` in your database
+
+    // // When you need the private key, you can decrypt it
+    const decipher = require('crypto').createDecipheriv('aes-256-cbc', hash, Buffer.from(salt.toString('hex'), 'hex'))
+    let decryptedPrivateKey = decipher.update(encryptedPrivateKey, 'hex', 'utf8')
+    decryptedPrivateKey += decipher.final('utf8')
+    // console.log({ decryptedPrivateKey, privKey: privKey.toString('hex') })
+    return result
   }
 }
