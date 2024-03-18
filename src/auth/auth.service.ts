@@ -20,6 +20,7 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(accessToken, {
         secret: this.configService.get<string>('JWT_SECRET')
       })
+
       return payload
     } catch {
       throw new UnauthorizedException()
@@ -39,7 +40,7 @@ export class AuthService {
 
     const accountAddress = await this.accountService.calculateAccount(user.keyHash, user.salt, loginDto.password)
 
-    const payload = { ...user.toObject() }
+    const payload = { email: user.email, address: accountAddress }
     const jwt = await this.jwtService.signAsync(payload)
 
     return { jwt: jwt, address: accountAddress }
