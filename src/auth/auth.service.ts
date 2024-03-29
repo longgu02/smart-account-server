@@ -38,7 +38,8 @@ export class AuthService {
       throw new UnauthorizedException({ ...WRONG_USERNAME_OR_PASSWORD })
     }
 
-    const accountAddress = await this.accountService.calculateAccount(user.keyHash, user.salt, loginDto.password)
+    //user.keyHash, user.salt, loginDto.password
+    const accountAddress = await this.accountService.calculateAccount()
 
     const payload = { email: user.email, address: accountAddress }
     const jwt = await this.jwtService.signAsync(payload)

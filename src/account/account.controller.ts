@@ -1,7 +1,8 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { AccountService } from './account.service'
 import { LoginDto } from 'src/auth/dto/log-in.dto'
+import { SignMessageDto } from './dto/signMessage.dto'
 
 @Controller('account')
 export class AccountController {
@@ -17,13 +18,13 @@ export class AccountController {
     return this.accountService.getAllAccount()
   }
 
-  // @Get('/calculate')
-  // getAccountCalculated() {
-  //   return this.accountService.calculateAccount()
-  // }
+  @Get('/calculate')
+  getAccountCalculated() {
+    return this.accountService.calculateAccount()
+  }
 
-  // @Get('/transfer')
-  // transfer() {
-  //   return this.accountService.transfer()
-  // }
+  @Post('/sign-message')
+  signMessage(@Body() signMessageDto: SignMessageDto) {
+    return this.accountService.signMessage(signMessageDto)
+  }
 }
