@@ -5,13 +5,15 @@ import { AppService } from './app.service'
 import { AccountModule } from './account/account.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { AuthModule } from './auth/auth.module'
+import { SessionModule } from './session/session.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AccountModule,
-    AuthModule
+    AuthModule,
+    SessionModule
   ],
   controllers: [AppController],
   providers: [AppService]
