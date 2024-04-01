@@ -1,16 +1,16 @@
-import { Prop, Schema } from '@nestjs/mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { HydratedDocument } from 'mongoose'
 
-enum SessionType {
-  NATIVE,
-  ERC20,
-  ERC721
-}
+export type AccountDocument = HydratedDocument<Session>
 
 // validUntil, validAfter, sessionVerificationModule address, validationData, merkleProof, signature
 @Schema()
 export class Session {
   @Prop()
-  publicKey: string
+  account: string
+
+  @Prop()
+  authorized: string
 
   @Prop()
   validAfter: number
@@ -22,8 +22,10 @@ export class Session {
   sessionVerificationModule: string
 
   @Prop()
-  type: SessionType
+  token: string
 
   @Prop()
   limit: string
 }
+
+export const SessionSchema = SchemaFactory.createForClass(Session)
