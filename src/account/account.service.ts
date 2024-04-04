@@ -174,4 +174,10 @@ export class AccountService {
     const signedMessage = wallet.signMessage(signMessageDto.message)
     return signedMessage
   }
+
+  public async isPluginInstalled(address: string, pluginAddress: string) {
+    const matchedAccount = await this.accountModel.findOne({ address: address })
+    const installedPlugin = matchedAccount.installedPlugin
+    return installedPlugin.includes(pluginAddress)
+  }
 }

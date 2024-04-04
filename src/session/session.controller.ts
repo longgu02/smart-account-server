@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common'
 import { SessionDto } from './dto/session.dto'
 import { SessionService } from './session.service'
 import { EditSessionDto } from './dto/editSession.dto'
@@ -36,5 +36,14 @@ export class SessionController {
       result.authorizedSession = await this.sessionService.getAuthorizedSession(address)
     }
     return result
+  }
+
+  @Delete('/:id')
+  async removeSession(@Param('id') id: string) {
+    const deleted = this.sessionService.removeSession(id)
+    return {
+      id: id,
+      message: deleted ? 'Session removed successfully' : 'An Error has occurred'
+    }
   }
 }

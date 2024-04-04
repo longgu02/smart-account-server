@@ -22,6 +22,9 @@ export class Account {
   addressBook: Array<string>
 
   @Prop()
+  installedPlugin: Array<string>
+
+  @Prop()
   signer: Array<string>
 
   @Prop()

@@ -45,4 +45,12 @@ export class SessionService {
     const matchedSession = await this.sessionModel.find({ authorized: address })
     return matchedSession
   }
+
+  async removeSession(id: string) {
+    const deletedSession = await this.sessionModel.findByIdAndDelete(id)
+    if (!deletedSession) {
+      throw new NotFoundException(`Session with ID ${id} not found`)
+    }
+    return true
+  }
 }
