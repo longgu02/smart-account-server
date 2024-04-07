@@ -39,12 +39,12 @@ export class AuthService {
     }
 
     //user.keyHash, user.salt, loginDto.password
-    const accountAddress = await this.accountService.calculateAccount()
+    const accountAddress = await this.accountService.calculateAccount(user.address)
 
     const payload = { email: user.email, address: accountAddress }
     const jwt = await this.jwtService.signAsync(payload)
 
-    return { jwt: jwt, address: accountAddress }
+    return { jwt: jwt, address: accountAddress, publicKey: user.address }
   }
 
   async signUp(signUpDto: SignUpDto) {

@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Account } from './schemas/account.schema'
 import { Model } from 'mongoose'
 import { hash, genSalt } from 'bcrypt'
-import { getWalletAddress } from 'src/utils'
+import { getServerWalletWithProvider, getWalletAddress } from 'src/utils'
 import { fillUserOp } from 'src/utils/userOp'
 import { SignMessageDto } from './dto/signMessage.dto'
 import { AuthService } from 'src/auth/auth.service'
@@ -25,7 +25,8 @@ export class AccountService {
       email: email,
       password: await this.hashPassword(password),
       salt: newKeyHash.salt,
-      keyHash: newKeyHash.encryptedPrivateKey
+      keyHash: newKeyHash.encryptedPrivateKey,
+      address: newKeyHash.address
     })
 
     await account.save()
@@ -57,35 +58,19 @@ export class AccountService {
     return this.accountModel.findOne({ email })
   }
   // keyHash: string, salt: string, password: string
-  async calculateAccount() {
+  async calculateAccount(address: string) {
     // Provider
-    const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
-    // const provider = new JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`)
-    const provider = new ethers.JsonRpcProvider('http://localhost:8545')
-
-    // Wallet
-    // const privateKey = await this.decipherKey(keyHash, salt, password)
-    const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-
-    const wallet = new Wallet(privateKey)
-    const signer = wallet.connect(provider)
+    const { signer, provider } = getServerWalletWithProvider()
+    console.log(await provider.getBalance(signer.address))
 
     // Contract
     const AccountFactory = new ContractFactory(accountFactoryAbi, AF_BYTECODE, provider)
-    const Account = new ContractFactory(accountAbi, accountByteCode, provider)
-    const AFContract = new Contract(AF_ADDRESS, accountFactoryAbi, signer)
     const EPContract = new Contract(EP_ADDRESS, entryPointAbi, signer)
 
     // Init code
     let initCode =
       AF_ADDRESS +
-      AccountFactory.interface
-        .encodeFunctionData('createAccount', [
-          '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-          ECDSASM_ADDRESS,
-          EP_ADDRESS
-        ])
-        .slice(2)
+      AccountFactory.interface.encodeFunctionData('createAccount', [address, ECDSASM_ADDRESS, EP_ADDRESS]).slice(2)
 
     let sender: any
 
@@ -97,22 +82,8 @@ export class AccountService {
       // sender = "0x" + ex.data.data.slice(-40);
       // Testnet
       sender = '0x' + ex.data.slice(-40)
-      // console.log(ex);
+      // console.log(ex)
     }
-
-    const code = await provider.getCode(sender)
-    if (code !== '0x') {
-      initCode = '0x'
-    } else {
-    }
-
-    const userOp = await fillUserOp(sender, Account, EPContract, initCode, {
-      receiver: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-      amount: ethers.parseEther('0'),
-      data: '0x'
-    })
-
-    console.log(userOp)
 
     return sender
   }
@@ -121,7 +92,7 @@ export class AccountService {
     return await hash(password, 10)
   }
 
-  private genKey(password: string): Promise<{ salt: string; encryptedPrivateKey: string }> {
+  private genKey(password: string): Promise<{ salt: string; encryptedPrivateKey: string; address: string }> {
     // Generate a new key pair
     const wallet = Wallet.createRandom()
 
@@ -129,9 +100,6 @@ export class AccountService {
 
     // Get the private key
     const privKey = wallet.privateKey
-
-    // Get the public key
-    const publicKey = wallet.publicKey
 
     // console.log({ privateKey, publicKey })
     const result: any = {}
@@ -148,6 +116,7 @@ export class AccountService {
 
     result.salt = salt.toString('hex')
     result.encryptedPrivateKey = encryptedPrivateKey
+    result.address = wallet.address
 
     return result
   }
@@ -173,11 +142,5 @@ export class AccountService {
     const wallet = new Wallet(privKey)
     const signedMessage = wallet.signMessage(signMessageDto.message)
     return signedMessage
-  }
-
-  public async isPluginInstalled(address: string, pluginAddress: string) {
-    const matchedAccount = await this.accountModel.findOne({ address: address })
-    const installedPlugin = matchedAccount.installedPlugin
-    return installedPlugin.includes(pluginAddress)
   }
 }

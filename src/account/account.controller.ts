@@ -18,11 +18,6 @@ export class AccountController {
     return this.accountService.getAllAccount()
   }
 
-  @Get('/calculate')
-  getAccountCalculated() {
-    return this.accountService.calculateAccount()
-  }
-
   @Post('/sign-message')
   signMessage(@Body() signMessageDto: SignMessageDto) {
     return this.accountService.signMessage(signMessageDto)
