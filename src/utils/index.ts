@@ -14,8 +14,8 @@ export const getWalletAddress = (privateKey: string): string => {
 
 export const getServerWalletWithProvider = () => {
   const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
-  // const provider = new JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`)
-  const provider = new JsonRpcProvider('http://localhost:8545')
+  const provider = new JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`)
+  // const provider = new JsonRpcProvider('http://localhost:8545')
 
   // Wallet
   // const privateKey = await this.decipherKey(keyHash, salt, password)
