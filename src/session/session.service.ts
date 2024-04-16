@@ -4,6 +4,8 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { SessionDto } from './dto/session.dto'
 import { EditSessionDto } from './dto/editSession.dto'
+import { genMerkleTree } from 'src/utils/session'
+import { SM_ADDRESS } from 'src/constant/addresses'
 
 @Injectable()
 export class SessionService {
@@ -21,6 +23,7 @@ export class SessionService {
       validUntil: sessionDto.validUntil,
       sessionVerificationModule: sessionDto.sessionVerificationModule,
       token: sessionDto.token,
+      receiver: sessionDto.receiver,
       limit: sessionDto.limit
     })
 
@@ -52,5 +55,15 @@ export class SessionService {
       throw new NotFoundException(`Session with ID ${id} not found`)
     }
     return true
+  }
+
+  async getSessionMerkleTree(id: string) {
+    const session = await this.sessionModel.findById(id)
+    const { merkleTree, data, proof } = await genMerkleTree(session.sessionVerificationModule, {
+      address: session.authorized,
+      recipient: session.receiver,
+      maxAmount: BigInt(session.limit)
+    })
+    return { merkleTree, data, proof, root: merkleTree.getHexRoot() }
   }
 }

@@ -46,4 +46,9 @@ export class SessionController {
       message: deleted ? 'Session removed successfully' : 'An Error has occurred'
     }
   }
+
+  @Get('merkle/:id')
+  async getSessionMerkleTree(@Param('id') id: string) {
+    return await this.sessionService.getSessionMerkleTree(id)
+  }
 }

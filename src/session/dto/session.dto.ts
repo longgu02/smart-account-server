@@ -27,5 +27,9 @@ export class SessionDto {
 
   @IsString()
   @IsNotEmpty()
+  receiver: string
+
+  @IsString()
+  @IsNotEmpty()
   limit: string
 }

@@ -13,6 +13,9 @@ export class Session {
   authorized: string
 
   @Prop()
+  receiver: string
+
+  @Prop()
   validAfter: number
 
   @Prop()
