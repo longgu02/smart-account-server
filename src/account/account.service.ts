@@ -88,6 +88,18 @@ export class AccountService {
     return sender
   }
 
+  public async addAddressBookContact(account: string, newAddress: string, name: string) {
+    const matchedAccount = await this.accountModel.findOne({ address: account })
+    matchedAccount.addressBook = [...matchedAccount.addressBook, { address: newAddress, name: name }]
+    await matchedAccount.save()
+    return matchedAccount
+  }
+
+  public async getAddressBook(account: string) {
+    const matchedAccount = await this.accountModel.findOne({ address: account })
+    return matchedAccount.addressBook
+  }
+
   private async hashPassword(password: string): Promise<string> {
     return await hash(password, 10)
   }
@@ -140,7 +152,8 @@ export class AccountService {
 
     const privKey = await this.decipherKey(user.keyHash, user.salt, signMessageDto.password)
     const wallet = new Wallet(privKey)
-    const signedMessage = wallet.signMessage(signMessageDto.message)
+    const signedMessage = await wallet.signMessage(ethers.getBytes(signMessageDto.message))
+    const recovered = ethers.recoverAddress(signMessageDto.message, signedMessage)
     return signedMessage
   }
 }

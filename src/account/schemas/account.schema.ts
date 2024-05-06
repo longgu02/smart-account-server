@@ -19,7 +19,7 @@ export class Account {
   address: string
 
   @Prop()
-  addressBook: Array<string>
+  addressBook: Array<{ address: string; name: string }>
 
   @Prop()
   installedPlugin: Array<string>

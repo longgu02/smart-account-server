@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { AuthModule } from './auth/auth.module'
 import { SessionModule } from './session/session.module'
 import { PluginModule } from './plugin/plugin.module'
+import { TransactionModule } from './transaction/transaction.module'
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { PluginModule } from './plugin/plugin.module'
     AccountModule,
     AuthModule,
     SessionModule,
-    PluginModule
+    PluginModule,
+    TransactionModule
   ],
   controllers: [AppController],
   providers: [AppService]
