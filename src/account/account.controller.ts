@@ -16,9 +16,18 @@ export class AccountController {
 
   @Get('/address/:eoa')
   async calculateAddress(@Param('eoa') eoaAddress: string) {
-    const address = await this.accountService.calculateAccount(eoaAddress)
-    return address
+    const accounts = await this.accountService.fetchAddressAccount(eoaAddress)
+    if (!accounts || accounts.length <= 0) {
+      await this.accountService.storeEOA(eoaAddress)
+      return [await this.accountService.calculateAccount(eoaAddress)]
+    }
+    return accounts
   }
+
+  // @Post('/eoa-connect/:address')
+  // async connectEOA(@Param('address') eoaAddress: string){
+  //   const
+  // }
 
   @Get()
   getAllAccount() {

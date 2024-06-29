@@ -3,7 +3,7 @@ import { AF_ADDRESS, ECDSASM_ADDRESS, EP_ADDRESS, PM_ADDRESS } from 'src/constan
 import { Contract, ContractFactory, JsonRpcProvider, Wallet, ethers, getAddress, sha256 } from 'ethers'
 import { AF_BYTECODE, accountFactoryAbi } from 'src/constant/abis/abis/accountFactory'
 import { entryPointAbi } from 'src/constant/abis/abis/entryPointAbi'
-import { UserOp } from 'src/types/interfaces'
+import { AccountType, UserOp } from 'src/types/interfaces'
 import { accountAbi, accountByteCode } from 'src/constant/abis/abis/accountAbi'
 import { InjectModel } from '@nestjs/mongoose'
 import { Account } from './schemas/account.schema'
@@ -26,7 +26,21 @@ export class AccountService {
       password: await this.hashPassword(password),
       salt: newKeyHash.salt,
       keyHash: newKeyHash.encryptedPrivateKey,
-      address: newKeyHash.address
+      address: newKeyHash.address,
+      possessedAccounts: [await this.calculateAccount(newKeyHash.address)],
+      type: AccountType.EMAIL
+    })
+
+    await account.save()
+    return { account }
+  }
+
+  async storeEOA(address: string) {
+    const account = await this.accountModel.create({
+      address: address,
+      possessedAccounts: [await this.calculateAccount(address)],
+      addressBook: [],
+      type: AccountType.EOA
     })
 
     await account.save()
@@ -86,6 +100,13 @@ export class AccountService {
     }
 
     return sender
+  }
+
+  public async fetchAddressAccount(address: string) {
+    const matchedWallet = await this.accountModel.findOne({ address: address })
+    if (matchedWallet) {
+      return matchedWallet.possessedAccounts
+    }
   }
 
   public async addAddressBookContact(account: string, newAddress: string, name: string) {

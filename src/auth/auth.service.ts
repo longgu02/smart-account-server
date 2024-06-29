@@ -39,7 +39,7 @@ export class AuthService {
     }
 
     //user.keyHash, user.salt, loginDto.password
-    const accountAddress = await this.accountService.calculateAccount(user.address)
+    const accountAddress = user.possessedAccounts
 
     const payload = { email: user.email, address: accountAddress }
     const jwt = await this.jwtService.signAsync(payload)

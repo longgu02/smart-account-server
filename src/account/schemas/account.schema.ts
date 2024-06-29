@@ -25,7 +25,7 @@ export class Account {
   installedPlugin: Array<string>
 
   @Prop()
-  signer: Array<string>
+  possessedAccounts: Array<string>
 
   @Prop()
   keyHash: string
