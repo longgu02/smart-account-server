@@ -6,6 +6,7 @@ import { WRONG_USERNAME_OR_PASSWORD } from 'src/constant/error'
 import { compare } from 'bcrypt'
 import { LoginDto } from './dto/log-in.dto'
 import { SignUpDto } from './dto/sign-up.dto'
+import { RegisterDto } from 'src/account/dto/register.dto'
 
 @Injectable()
 export class AuthService {
@@ -47,8 +48,8 @@ export class AuthService {
     return { jwt: jwt, address: accountAddress, publicKey: user.address }
   }
 
-  async signUp(signUpDto: SignUpDto) {
-    const user = await this.accountService.createAccount(signUpDto.email, signUpDto.password)
+  async signUp(signUpDto: RegisterDto) {
+    const user = await this.accountService.createAccount(signUpDto.email, signUpDto.password, signUpDto.otp)
     return user
   }
 

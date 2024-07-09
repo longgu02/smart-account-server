@@ -18,21 +18,26 @@ import { compare } from 'bcrypt'
 @Injectable()
 export class AccountService {
   constructor(@InjectModel(Account.name) private accountModel: Model<Account>) {}
+  registerOtp = {}
 
-  async createAccount(email: string, password: string) {
-    const newKeyHash = await this.genKey(password)
-    const account = await this.accountModel.create({
-      email: email,
-      password: await this.hashPassword(password),
-      salt: newKeyHash.salt,
-      keyHash: newKeyHash.encryptedPrivateKey,
-      address: newKeyHash.address,
-      possessedAccounts: [await this.calculateAccount(newKeyHash.address)],
-      type: AccountType.EMAIL
-    })
+  async createAccount(email: string, password: string, otp: string) {
+    if (this.checkOtp(email, otp)) {
+      const newKeyHash = await this.genKey(password)
+      const account = await this.accountModel.create({
+        email: email,
+        password: await this.hashPassword(password),
+        salt: newKeyHash.salt,
+        keyHash: newKeyHash.encryptedPrivateKey,
+        address: newKeyHash.address,
+        possessedAccounts: [await this.calculateAccount(newKeyHash.address)],
+        type: AccountType.EMAIL
+      })
 
-    await account.save()
-    return { account }
+      await account.save()
+      return { account }
+    }
+
+    return { message: 'Wrong OTP' }
   }
 
   async storeEOA(address: string) {
@@ -164,7 +169,7 @@ export class AccountService {
 
   public async signMessage(signMessageDto: SignMessageDto) {
     const user = await this.findOne(signMessageDto.email)
-
+    // console.log(signMessageDto.password, user.password)
     const isMatched = await compare(signMessageDto.password, user.password)
 
     if (!isMatched) {
@@ -176,5 +181,17 @@ export class AccountService {
     const signedMessage = await wallet.signMessage(ethers.getBytes(signMessageDto.message))
     const recovered = ethers.recoverAddress(signMessageDto.message, signedMessage)
     return signedMessage
+  }
+
+  generateOTP(email: string): string {
+    const min = 100000 // Minimum value (inclusive)
+    const max = 999999 // Maximum value (inclusive)
+    const otp = Math.floor(Math.random() * (max - min + 1)) + min
+    this.registerOtp[email] = otp.toString()
+    return otp.toString()
+  }
+
+  checkOtp(email: string, otp: string) {
+    return this.registerOtp[email] == otp
   }
 }

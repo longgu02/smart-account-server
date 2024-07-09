@@ -4,14 +4,58 @@ import { AccountService } from './account.service'
 import { LoginDto } from 'src/auth/dto/log-in.dto'
 import { SignMessageDto } from './dto/signMessage.dto'
 import { AddAddressDto } from './dto/addressBook.dto'
+import { RegisterDto } from './dto/register.dto'
+import { MailerService } from '@nestjs-modules/mailer'
 
 @Controller('account')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly mailService: MailerService
+  ) {}
+
+  @Get('/tx-otp/:email')
+  getTxOtp(@Param('email') email: string) {
+    const OTP = this.accountService.generateOTP(email)
+    const message = `Your OTP is ${OTP}. Enter this OTP to confirm your transaction. Do not share this OTP to anyone!`
+
+    this.mailService.sendMail({
+      from: 'No Reply <accountify@gmail.com>',
+      to: email,
+      subject: `Transaction OTP`,
+      text: message
+    })
+
+    return {
+      message: 'success'
+    }
+  }
+
+  @Get('/register-otp/:email')
+  getOtp(@Param('email') email: string) {
+    const OTP = this.accountService.generateOTP(email)
+    const message = `Your OTP is ${OTP}. Do not share this OTP to anyone!`
+
+    this.mailService.sendMail({
+      from: 'No Reply <accountify@gmail.com>',
+      to: email,
+      subject: `Register OTP`,
+      text: message
+    })
+
+    return {
+      message: 'success'
+    }
+  }
+
+  @Get('/check-otp/:email/:otp')
+  checkOtp(@Param('email') email: string, @Param('otp') otp: string) {
+    return this.accountService.checkOtp(email, otp)
+  }
 
   @Post()
-  createAccount(accountInfo: LoginDto) {
-    return this.accountService.createAccount(accountInfo.email, accountInfo.password)
+  createAccount(accountInfo: RegisterDto) {
+    return this.accountService.createAccount(accountInfo.email, accountInfo.password, accountInfo.otp)
   }
 
   @Get('/address/:eoa')
